@@ -1,0 +1,15 @@
+name: test-climate-change-api
+
+on:
+  push:
+    branches: [climate-change-api]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v3
+
+        - run: docker compose -f climate-change-api/docker-compose.yaml up --build --detach 
+
+        - run: python climate-change-api/wait-for-api.py

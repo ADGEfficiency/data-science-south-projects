@@ -3,7 +3,6 @@ import sqlite3
 
 import pandas as pd
 
-
 if __name__ == "__main__":
     pkg = {}
     for dataset in ["co2", "temperature"]:
@@ -24,7 +23,7 @@ if __name__ == "__main__":
         cur = conn.cursor()
         for index, row in data.iterrows():
             query = """
-            INSERT INTO api (co2_ppm, date, temperature_c)
+            INSERT OR IGNORE INTO api (co2_ppm, date, temperature_c)
             VALUES (?, ?, ?);
             """
             cur.execute(
