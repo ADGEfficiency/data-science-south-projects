@@ -1,6 +1,6 @@
 # BP Historical Dataset Analysis
 
-Starter project for [Data Science South](https://www.datasciencesouth.com/) analyzing [the BP Statistical Review of World energy historical data from BP](https://www.bp.com/en/global/corporate/energy-economics/statistical-review-of-world-energy/downloads.html).  This project is a template for those looking to build a data analysis portfolio.
+Project for [Data Science South](https://www.datasciencesouth.com/) analyzing [the BP Statistical Review of World energy historical data from BP](https://www.bp.com/en/global/corporate/energy-economics/statistical-review-of-world-energy/downloads.html).  This project is a template for those looking to build a data analysis portfolio.
 
 The project follows three steps:
 
