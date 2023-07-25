@@ -3,8 +3,36 @@ import pathlib
 import time
 from datetime import datetime
 
+import boto3
 import pandas as pd
 import requests
+
+
+def get_bucket_name():
+    session = boto3.Session(region_name="ap-southeast-2")
+    cf = session.client("cloudformation")
+    response = cf.describe_stacks(StackName="BucketStack")
+    outputs = response["Stacks"][0]["Outputs"]
+    for output in outputs:
+        if output["OutputKey"] == "APIBucketName":
+            return output["OutputValue"]
+
+
+def write_s3_text(bucket, key, data):
+    session = boto3.Session(region_name="ap-southeast-2")
+    resource = session.resource("s3")
+    resource.Object(bucket, key).put(Body=str(data))
+    print(f"write_s3_text: {bucket, key}")
+
+
+def write_s3_parquet(bucket, key, data):
+    session = boto3.Session(region_name="ap-southeast-2")
+    resource = session.resource("s3")
+    f = io.BytesIO()
+    data.to_parquet(f, engine="pyarrow", index=False)
+    obj = resource.Object(bucket, key)
+    obj.put(Body=f.getvalue())
+    print(f"write_s3_parquet: {bucket, key}")
 
 
 def save_data(raw, processed, dataset, download_id):
@@ -15,7 +43,17 @@ def save_data(raw, processed, dataset, download_id):
     processed_fi = pathlib.Path(f"data/{dataset}/processed/{download_id}.parquet")
     processed_fi.parent.mkdir(parents=True, exist_ok=True)
     processed.to_parquet(processed_fi)
-    print(f"saved to {raw_fi} {processed_fi}")
+    print(f"\nsave_data: raw={raw_fi} processed={processed_fi}")
+
+    try:
+        bucket = get_bucket_name()
+        write_s3_text(bucket, f"{dataset}/raw/{download_id}.txt", raw)
+        write_s3_parquet(
+            bucket, f"{dataset}/processed/{download_id}.parquet", processed
+        )
+
+    except Exception as err:
+        print(f"unable to write to s3 {err}")
 
 
 def clean_float_data(value):

@@ -1,7 +1,10 @@
 import pathlib
 import sqlite3
+import time
+import datetime
 
 import pandas as pd
+
 
 if __name__ == "__main__":
     pkg = {}
@@ -31,5 +34,15 @@ if __name__ == "__main__":
             )
 
         cur.execute("SELECT COUNT(*) FROM api")
-        result = cur.fetchone()
-        print(f"The number of rows in the 'api' table is {result[0]}")
+        count = cur.fetchone()[0]
+        print(f"The number of rows in the 'api' table is {count}")
+
+        query = """
+        INSERT INTO log (run_time, data_length)
+        VALUES (?, ?);
+        """
+        run_time = datetime.datetime.now().isoformat()
+        cur.execute(query, (run_time, count))
+
+    print("sleeping to let litestream replication catch up")
+    time.sleep(2)

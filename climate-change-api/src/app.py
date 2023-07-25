@@ -1,6 +1,8 @@
+import asyncio
 import collections
 import datetime
 import sqlite3
+import subprocess
 
 import fastapi
 import pydantic
@@ -9,15 +11,15 @@ app = fastapi.FastAPI()
 
 
 class Request(pydantic.BaseModel):
-    start: datetime.date = pydantic.Field(datetime.date(year=2021, month=1, day=1), description="Start date (YYYY-MM-DD).")
+    start: datetime.date = pydantic.Field(
+        datetime.date(year=2021, month=1, day=1), description="Start date (YYYY-MM-DD)."
+    )
     n: int = pydantic.Field(12, description="Number of months to return.")
 
 
 class Response(pydantic.BaseModel):
     date: list[datetime.date] = pydantic.Field(
-        ...,
-        title="date",
-        description="ISO8061 date YYYY-MM-DD."
+        ..., title="date", description="ISO8061 date YYYY-MM-DD."
     )
     temperature: list[float] = pydantic.Field(
         ...,
@@ -70,3 +72,19 @@ async def root():
             }
         ],
     }
+
+
+async def run_restore():
+    subprocess.run(["bash", "./restore-db.sh", "./data/database.db"], check=True)
+
+
+async def run_restore_schedule():
+    while True:
+        await run_restore()
+        await asyncio.sleep(24 * 60 * 60)  # Sleep for 24 hours
+
+
+@app.on_event("startup")
+async def startup_event():
+    await run_restore()
+    asyncio.create_task(run_restore_schedule())

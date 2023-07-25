@@ -1,0 +1,41 @@
+name: climate-change-api
+
+on:
+  push:
+    branches: [ climate-change-api ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: docker compose -f climate-change-api/docker-compose.yaml up --build --detach
+      - run: python climate-change-api/wait-for-api.py
+
+  deploy-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - run: npm install -g aws-cdk@2.88.0
+      - run: pip install -r climate-change-api/cdk-requirements.txt
+      - run: cd climate-change-api && cdk deploy --require-approval never --all
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
+  deploy-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - run: curl -L https://fly.io/install.sh | sh
+
+      - run: cd climate-change-api && /home/runner/.fly/bin/flyctl deploy
+        env:
+          FLY_ACCESS_TOKEN: ${{ secrets.FLY_TOKEN }}
