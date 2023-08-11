@@ -1,0 +1,12 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: api.Dockerfile
+    ports:
+      - "80:80"
+
+  script:
+    build:
+      context: .
+      dockerfile: script.Dockerfile
