@@ -1,0 +1,19 @@
+services:
+  pipeline:
+    build:
+      context: .
+      dockerfile: pipeline.Dockerfile
+    volumes:
+      - api-data:/app/data
+
+  api:
+    build:
+      context: .
+      dockerfile: api.Dockerfile
+    volumes:
+      - api-data:/app/data
+    ports:
+      - "8000:8000"
+
+volumes:
+  api-data:
