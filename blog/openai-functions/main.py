@@ -10,6 +10,7 @@ import pydantic
 
 class Evaluation(pydantic.BaseModel):
     """Assessment of a piece of natural language."""
+
     grammar_errors: list[str] = pydantic.Field(
         default_factory=list, description="grammatical mistakes"
     )
@@ -17,14 +18,11 @@ class Evaluation(pydantic.BaseModel):
         default_factory=list, description="spelling mistakes"
     )
     corrected_text: str = pydantic.Field(
-        description="the correct text",
-        default="a sentence to evaluate"
+        description="the correct text", default="a sentence to evaluate"
     )
-    is_hard_to_read: bool = pydantic.Field(
-        description="if the sentence is diffcult to read",
-        default=False
+    hard_to_read_score: float = pydantic.Field(
+        0.5, description="how hard the sentence is to read, 0 is hard, 1 is easy"
     )
-
 
 
 if __name__ == "__main__":
@@ -38,16 +36,18 @@ if __name__ == "__main__":
     functions = [
         {
             "name": "evaluate_text",
-            "description": "Evaluate text for errors.",
+            "description": "Evaluate text for mistakes, errors and ease of reading.",
             "parameters": {
                 "type": schema["type"],
                 "properties": schema["properties"],
             },
+            "required": list(evaluation.model_dump().keys()),
         }
     ]
 
     #  text to evaluate
     prompt = "Text to evaulate `The cad jumped over mat.`"
+    print(f"{prompt=}")
 
     #  call the openAI api using the `openai` Python package
     response = openai.ChatCompletion.create(
@@ -57,10 +57,7 @@ if __name__ == "__main__":
                 "role": "system",
                 "content": "You are proof reading text.",
             },
-            {
-                "role": "user",
-                "content": prompt
-            },
+            {"role": "user", "content": prompt},
         ],
         functions=functions,
         temperature=0,
@@ -70,15 +67,13 @@ if __name__ == "__main__":
     choice = response["choices"][0]
 
     #  make a dictionary from the function call response
-    evaluation = json.loads(
-        choice["message"]["function_call"]["arguments"]
-    )
-    print(evaluation)
+    evaluation = json.loads(choice["message"]["function_call"]["arguments"])
+    print(f"{evaluation=}")
 
     #  validate the response
     validated = Evaluation(**evaluation)
+    print(f"{validated=}")
 
     #  check that we have no message from the chat API
     #  not 100% needed
-    content = choice["message"]["content"]
-    assert content is None
+    assert choice["content"] is None
