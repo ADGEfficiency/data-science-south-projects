@@ -2,7 +2,7 @@ name: climate-change-api
 
 on:
   push:
-    branches: [ climate-change-api ]
+    branches: [ climate-change-api, main ]
 
 jobs:
   test:
