@@ -101,7 +101,9 @@ class PipelineStack(cdk.Stack):
         )
 
         rule = events.Rule(
-            self, "PipelineRule", schedule=events.Schedule.cron(minute="0", hour="0")
+            self,
+            "PipelineRule",
+            schedule=events.Schedule.cron(minute="0", hour="0", day="20", month="*"),
         )
 
         ecs_target = targets.EcsTask(
