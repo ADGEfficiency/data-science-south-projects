@@ -26,7 +26,7 @@ if __name__ == "__main__":
         cur = conn.cursor()
         for index, row in data.iterrows():
             query = """
-            INSERT OR IGNORE INTO api (co2_ppm, date, temperature_c)
+            INSERT OR REPLACE INTO api (co2_ppm, date, temperature_c)
             VALUES (?, ?, ?);
             """
             cur.execute(
