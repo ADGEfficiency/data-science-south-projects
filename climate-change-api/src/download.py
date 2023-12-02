@@ -79,6 +79,12 @@ def download_co2():
     processed = pd.read_csv(data, comment="#", delim_whitespace=True, header=None)
     processed.columns = ["year", "month", "day", "decimal", "co2_ppm"]
     processed["date"] = pd.to_datetime(processed[["year", "month", "day"]])
+    processed = processed.groupby([
+        processed['date'].dt.year,
+        processed['date'].dt.month
+    ]).mean()
+    processed['date'] = processed.index.map(lambda x: datetime(year=x[0], month=x[1], day=1))
+    processed = processed.reset_index(drop=True)
     save_data(response.text, processed, "co2", download_id)
 
 
