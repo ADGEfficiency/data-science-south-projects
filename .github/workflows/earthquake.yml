@@ -12,4 +12,8 @@ jobs:
           python-version: '3.11'
       - run: pip install -r requirements.txt
         working-directory: ./earthquakes-nz
+      - run: kaggle datasets download kkhandekar/earthquakes-data-nz
+      - run: unzip earthquakes-data-nz.zip
+        working-directory: ./earthquakes-nz
       - run: pytest .
+        working-directory: ./earthquakes-nz
